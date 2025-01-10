@@ -64,7 +64,7 @@ class CustomInfoWindow extends StatefulWidget {
 }
 
 class _CustomInfoWindowState extends State<CustomInfoWindow> {
-  bool _showNow = false;
+  bool _showNow = true;
   double _leftMargin = 0;
   double _topMargin = 0;
   Widget? _child;
