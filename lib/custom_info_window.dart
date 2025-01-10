@@ -97,7 +97,7 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
         (widget.offset + widget.height);
     widget.onChange?.call(top, left);
 
-    if (context.mounted) {
+    if (mounted) {
       setState(() {
         _leftMargin = left;
         _topMargin = top;
