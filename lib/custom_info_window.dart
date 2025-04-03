@@ -73,11 +73,20 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
   @override
   void initState() {
     super.initState();
+    if (Platform.isAndroid) {
+      Future.microtask(() {
+        devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
+      });
+    } else {
+      devicePixelRatio = 1.0;
+    }
     widget.controller.addInfoWindow = _addInfoWindow;
     widget.controller.onCameraMove = _onCameraMove;
     widget.controller.hideInfoWindow = _hideInfoWindow;
     widget.controller.showCachedInfoWindow = showCachedInfoWindow;
   }
+
+  late double devicePixelRatio;
 
   /// Calculate the position on [CustomInfoWindow] and redraw on screen.
   void _updateInfoWindow() async {
@@ -89,13 +98,12 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
     ScreenCoordinate screenCoordinate = await widget
         .controller.googleMapController!
         .getScreenCoordinate(_latLng!);
-    double devicePixelRatio =
-        Platform.isAndroid ? MediaQuery.of(context).devicePixelRatio : 1.0;
+
     double left =
         (screenCoordinate.x.toDouble() / devicePixelRatio) - (widget.width / 2);
     double top = (screenCoordinate.y.toDouble() / devicePixelRatio) -
         (widget.offset + widget.height);
-    widget.onChange?.call(top, left);
+    // widget.onChange?.call(top, left);
 
     if (mounted) {
       setState(() {
@@ -107,9 +115,11 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
 
   /// Assign the [Widget] and [Marker]'s [LatLng].
   void showCachedInfoWindow() {
-    setState(() {
-      _showNow = true;
-    });
+    if (mounted) {
+      setState(() {
+        _showNow = true;
+      });
+    }
   }
 
   /// Assign the [Widget] and [Marker]'s [LatLng].
@@ -126,28 +136,28 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
 
   /// Disables [CustomInfoWindow] visibility.
   void _hideInfoWindow() {
-    setState(() {
-      _showNow = false;
-    });
+    if (mounted) {
+      setState(() {
+        _showNow = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_showNow == false ||
+        (_leftMargin == 0 && _topMargin == 0) ||
+        _child == null ||
+        _latLng == null) {
+      return const SizedBox.shrink();
+    }
     return Positioned(
       left: _leftMargin,
       top: _topMargin,
-      child: Visibility(
-        visible: (_showNow == false ||
-                (_leftMargin == 0 && _topMargin == 0) ||
-                _child == null ||
-                _latLng == null)
-            ? false
-            : true,
-        child: Container(
-          child: _child,
-          height: widget.height,
-          width: widget.width,
-        ),
+      child: SizedBox(
+        child: _child,
+        height: widget.height,
+        width: widget.width,
       ),
     );
   }
